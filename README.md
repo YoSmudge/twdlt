@@ -1,7 +1,7 @@
 #TWDLT
 ##Keep your Twitter feed tidy
 
-TWDLT is a simple Python script to automatically delete any tweets older than a certain date. You can set sepreate "expire" times for normal tweets and @replies. The script can be run continuously with something like Supervisord or one time with something like CRONd or Jenkins.
+TWDLT is a simple Python script to automatically delete any tweets older than a certain date. You can set separate "expire" times for normal tweets and @replies. The script can be run continuously with something like Supervisord or one time with something like CRONd or Jenkins.
 
 TWDLT uses a JSON configuration file, you need to be able to locate and provide a consumer key, consumer secret and the linked access token and access token secret from Twitter.
 
@@ -31,7 +31,7 @@ Be aware there are twitter API limits, so if you have a lot of tweets to delete 
 
 #Installation
 
-To install the software, download this repository, run `pip install -r requirements.txt` then `python setup.py install`. It's reccomended you install within a virtualenv.
+To install the software, download this repository, run `pip install -r requirements.txt` then `python setup.py install`. It's recommended you install within a virtualenv.
 
 #Running
 
@@ -43,4 +43,17 @@ For a list of options run `twdtl --help`
 
 #Licence
 
-This software is licenced as GPL3. See LICENCE.txt for more information
+This software is licensed under the GPLv3.
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
