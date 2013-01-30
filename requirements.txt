@@ -1,0 +1,1 @@
+-e git://github.com/bear/python-twitter.git@a3bdd9e53621c699b9db1c2db8fd70557dcaa70a#egg=twitter
