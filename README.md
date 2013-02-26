@@ -31,7 +31,7 @@ Be aware there are twitter API limits, so if you have a lot of tweets to delete 
 
 #Installation
 
-To install the software, download this repository, run `pip install -r requirements.txt` then `python setup.py install`. It's recommended you install within a virtualenv.
+To install the software, run `pip install -r https://raw.github.com/samarudge/twdlt/master/requirements.txt`. It's recommended you install within a virtualenv.
 
 #Running
 
