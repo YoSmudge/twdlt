@@ -15,6 +15,7 @@ Configuration files are simple JSON files containing the information needed to r
  * **maxPage** - *default: 5* - maximum number of pages to fetch*
  * **useLimit** - *default: 0.25* - maximum % of rate limit for a resource that will be used
  * **every** - *default: 60* - how often to check for tweets to delete, in minutes. Not used if running as `--cron`
+ * **exclude** - List of Python formatted Regex's, any tweets that match any regex will use `atAge` instead of `age`
 
 You **must** also supply
 

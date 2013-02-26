@@ -52,7 +52,8 @@ class Config(dict):
             'perPage':150,
             'maxPage':5,
             'useLimit':0.25,
-            'every':60
+            'every':60,
+            'exclude':[]
         }
         
         self.config.update(json.loads(raw))

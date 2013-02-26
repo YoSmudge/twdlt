@@ -23,6 +23,7 @@ import sys
 from time import sleep, time
 import twitter
 import pprint
+import re
 
 class dltr(object):
     """
@@ -121,7 +122,9 @@ class dltr(object):
         
         self.api()
         self.findTweets()
-        self.deleteTweets()
+        
+        if not self.opts.dry:
+            self.deleteTweets()
     
     def findTweets(self):
         """
@@ -156,10 +159,21 @@ class dltr(object):
                 results = False
             
             for tweet in tweets:
+                keepExtended = False
+                
                 if tweet.text[0] == "@":
+                    keepExtended = True
+                
+                for pattern in self.config['exclude']:
+                    if re.search(pattern,tweet.text):
+                        keepExtended = True
+                
+                if keepExtended:
                     dlAfter = atAgeSeconds
                 else:
                     dlAfter = ageSeconds
+                
+                logging.debug(tweet.text)
                 
                 if now-tweet.GetCreatedAtInSeconds() > dlAfter:
                     logging.debug("Status {0} is older than {1}, will be deleted".format(tweet.id,ageSeconds))
@@ -181,8 +195,8 @@ class dltr(object):
         
         for tweet in self.toDelete:
             logging.debug("Deleting tweet {0}".format(tweet))
-            self.rateWait('delete')
             
+            self.rateWait('delete')
             self.t.DestroyStatus(tweet)
         
         logging.debug("All tweets deleted!")
@@ -196,15 +210,19 @@ def cli():
     p.add_option("-c", "--config", dest="configLocation", help="Path to config JSON file", metavar="FILE")
     p.add_option("--cron", dest="cronMode", help="Use CRON mode (run once then exit 0)", action="store_true")
     p.add_option("-v", "--verbose", dest="verbose", help="Verbose/debug output", action="store_true")
+    p.add_option("-d", "--dry", dest="dry", help="Dry run (don't delete tweets)", action="store_true")
     
     (opts,args) = p.parse_args()
     
-    if opts.verbose:
+    if opts.verbose or opts.dry:
         logging.basicConfig(
             level=logging.DEBUG
         )
-        
-        logging.debug("Debug Mode On!")
+    
+    logging.debug("Debug Mode On!")
+    
+    if opts.dry:
+        logging.debug("Dry Mode On!")
     
     if not opts.configLocation:
         p.error("You must specify a valid config file")
@@ -212,6 +230,7 @@ def cli():
     
     try:
         d = dltr(opts.configLocation)
+        d.opts = opts
     
         if opts.cronMode:
             d.run()
