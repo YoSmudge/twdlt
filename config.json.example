@@ -1,0 +1,14 @@
+{
+    "age":0.09,
+    "atAge":168,
+    "consumerKey":"---",
+    "consumerSecret":"---",
+    "accessToken":"---",
+    "accessSecret":"---",
+    "every":5,
+    "exclude":[
+        "instagr.am",
+        "path.com",
+        "vine.com"
+    ]
+}
