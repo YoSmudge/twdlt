@@ -161,11 +161,16 @@ class dltr(object):
             for tweet in tweets:
                 keepExtended = False
                 
-                if tweet.text[0] == "@":
+                tweetText = tweet.text
+                
+                for url in tweet.urls:
+                    tweetText = tweetText.replace(url.url,url.url_expanded)
+                
+                if tweetText[0] == "@":
                     keepExtended = True
                 
                 for pattern in self.config['exclude']:
-                    if re.search(pattern,tweet.text):
+                    if re.search(pattern,tweetText):
                         keepExtended = True
                 
                 if keepExtended:
@@ -173,7 +178,7 @@ class dltr(object):
                 else:
                     dlAfter = ageSeconds
                 
-                logging.debug(tweet.text)
+                logging.debug(tweetText)
                 
                 if now-tweet.GetCreatedAtInSeconds() > dlAfter:
                     logging.debug("Status {0} is older than {1}, will be deleted".format(tweet.id,ageSeconds))
