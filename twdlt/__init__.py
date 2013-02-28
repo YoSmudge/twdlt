@@ -164,7 +164,7 @@ class dltr(object):
                 tweetText = tweet.text
                 
                 for url in tweet.urls:
-                    tweetText = tweetText.replace(url.url,url.url_expanded)
+                    tweetText = tweetText.replace(url.url,url.expanded_url)
                 
                 if tweetText[0] == "@":
                     keepExtended = True
