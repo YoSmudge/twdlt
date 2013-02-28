@@ -1,2 +1,6 @@
 -e git://github.com/samarudge/twdlt.git#egg=twdlt
--e git://github.com/bear/python-twitter.git@a3bdd9e53621c699b9db1c2db8fd70557dcaa70a#egg=twitter
+httplib2==0.7.7
+oauth2==1.5.211
+simplejson==3.1.0
+-e git+git@github.com:samarudge/twdlt.git@44017ef99c225d77387e18165565050073174c63#egg=twdlt-dev
+wsgiref==0.1.2
