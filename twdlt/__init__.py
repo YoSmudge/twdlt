@@ -66,7 +66,8 @@ class dltr(object):
                 consumer_secret=self.config['consumerSecret'],
                 access_token_key=self.config['accessToken'],
                 access_token_secret=self.config['accessSecret'],
-                base_url='https://api.twitter.com/1.1'
+                base_url='https://api.twitter.com/1.1',
+                cache=None
             )
             
             logging.debug("Testing credentials against Twitter")
