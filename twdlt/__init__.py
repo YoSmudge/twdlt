@@ -83,13 +83,15 @@ class dltr(object):
         Check the rate limit status, if there are not enough requests left to make this call within the bounds of `self.useLimit`
         """
         
-        if self.callsMade%20 or not self.rateLimit:
+        if self.callsMade%20 == 0 or not self.rateLimit:
             logging.debug("Getting rate limit from Twitter")
             url  = '%s/application/rate_limit_status.json' % self.t.base_url
             json = self.t._FetchUrl(url, no_cache=True)
             data = self.t._ParseAndCheckTwitter(json)
             
             self.rateLimit = data['resources']
+        
+        self.callsMade += 1
         
         if ty == 'find':
             remaining = self.rateLimit['statuses']['/statuses/user_timeline']['remaining']
@@ -137,6 +139,7 @@ class dltr(object):
         if self.config['perPage']*self.config['maxPage'] > 800:
             raise ConfigException("perPage*maxPage is greater than 800, which is greater than the limit of the Twitter status feed")
         
+        mid = None
         page = 1
         results = True
         now = time()
@@ -154,7 +157,7 @@ class dltr(object):
             
             self.rateWait('find')
             
-            tweets = self.t.GetUserTimeline(count=self.config['perPage'],page=page)
+            tweets = self.t.GetUserTimeline(count=self.config['perPage'],max_id=mid)
             
             if len(tweets) == 0:
                 results = False
@@ -186,6 +189,9 @@ class dltr(object):
                     self.toDelete.append(tweet.id)
                 else:
                     logging.debug("Status {0} is not older than {1}".format(tweet.id, dlAfter))
+                
+                if tweet.id < mid:
+                    mid = tweet.id
             
             page += 1
             
@@ -203,7 +209,16 @@ class dltr(object):
             logging.debug("Deleting tweet {0}".format(tweet))
             
             self.rateWait('delete')
-            self.t.DestroyStatus(tweet)
+            
+            try:
+                self.t.DestroyStatus(tweet)
+            except twitter.TwitterError as e:
+                if e[0]['code'] == 34:#Not found error
+                    logging.warning("Status {0} could not be deleted, Twitter said 'Not Found'".format(tweet))
+                else:
+                    logging.critical("Twitter error {0}".format(e[0]['code']))
+                    logging.critical(e[0]['message'])
+                    raise twitter.TwitterError(e)
         
         logging.debug("All tweets deleted!")
 
