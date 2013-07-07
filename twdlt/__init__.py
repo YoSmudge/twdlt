@@ -110,8 +110,8 @@ class dltr(object):
             
         if remaining <= limit-(limit*self.config['useLimit']):
             wait = int(reset-time())+5
-            logging.warning("Waiting for {0} seconds until rate limit is back above threshold".format(wait))
-            sleep(wait)
+            logging.warning("Waiting for {0} seconds until rate limit for {1} is back above threshold".format(wait,ty))
+            #sleep(wait)
             self.rateLimit = None
         
     def run(self):
@@ -213,7 +213,8 @@ class dltr(object):
             try:
                 self.t.DestroyStatus(tweet)
             except twitter.TwitterError as e:
-                if e[0]['code'] == 34:#Not found error
+                logging.warning(e)
+                if e[0][0]['code'] == 34:#Not found error
                     logging.warning("Status {0} could not be deleted, Twitter said 'Not Found'".format(tweet))
                 else:
                     logging.critical("Twitter error {0}".format(e[0]['code']))
