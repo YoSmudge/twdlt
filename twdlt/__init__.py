@@ -70,10 +70,13 @@ class dltr(object):
                 cache=None
             )
             
+            self.rateWait('verify')
             logging.debug("Testing credentials against Twitter")
             try:
                 self.t.VerifyCredentials()
-            except twitter.TwitterError:
+            except twitter.TwitterError as e:
+                logging.critical("Twitter error {0}".format(e[0][0]['code']))
+                logging.critical(e[0][0]['message'])
                 raise ConfigException("Could not verify credentials, check your API keys are correct")
             
             logging.debug("OK")
@@ -93,25 +96,28 @@ class dltr(object):
         
         self.callsMade += 1
         
-        if ty == 'find':
-            remaining = self.rateLimit['statuses']['/statuses/user_timeline']['remaining']
-            limit = self.rateLimit['statuses']['/statuses/user_timeline']['limit']
-            reset = self.rateLimit['statuses']['/statuses/user_timeline']['reset']
-            self.rateLimit['statuses']['/statuses/user_timeline']['remaining'] -= 1
-            
-            logging.debug("Rate limit {0} for find".format(remaining))
+        if ty == 'verify':
+            resource = 'account'
+            path = '/account/verify_credentials'
+        elif ty == 'find':
+            resource = 'statuses'
+            path = '/statuses/user_timeline'
         elif ty == 'delete':
-            remaining = self.rateLimit['statuses']['/statuses/show/:id']['remaining']
-            limit = self.rateLimit['statuses']['/statuses/show/:id']['limit']
-            reset = self.rateLimit['statuses']['/statuses/show/:id']['reset']
-            self.rateLimit['statuses']['/statuses/show/:id']['remaining'] -= 1
-            
-            logging.debug("Rate limit {0} for delete".format(remaining))
+            resource = 'statuses'
+            path = '/statuses/show/:id'
+        
+        remaining = self.rateLimit[resource][path]['remaining']
+        limit = self.rateLimit[resource][path]['limit']
+        reset = self.rateLimit[resource][path]['reset']
+        
+        self.rateLimit[resource][path]['remaining'] -= 1
+        
+        logging.debug("Rate limit {0} for {1}".format(remaining,ty))
             
         if remaining <= limit-(limit*self.config['useLimit']):
             wait = int(reset-time())+5
             logging.warning("Waiting for {0} seconds until rate limit for {1} is back above threshold".format(wait,ty))
-            #sleep(wait)
+            sleep(wait)
             self.rateLimit = None
         
     def run(self):
@@ -153,13 +159,16 @@ class dltr(object):
         logging.debug("Deleting tweets older than {0} seconds".format(ageSeconds))
         
         while results:
-            logging.debug("Getting page {0} of tweets".format(page))
+            logging.debug("Getting page {0} ({1}) of tweets".format(page,mid))
             
             self.rateWait('find')
             
-            tweets = self.t.GetUserTimeline(count=self.config['perPage'],max_id=mid)
+            tweets = self.t.GetUserTimeline(
+                count=self.config['perPage'],
+                max_id=mid-1 if mid else None
+            )
             
-            if len(tweets) == 0:
+            if len(tweets) == 0 or len(tweets) < self.config['perPage']:
                 results = False
             
             for tweet in tweets:
@@ -190,8 +199,8 @@ class dltr(object):
                 else:
                     logging.debug("Status {0} is not older than {1}".format(tweet.id, dlAfter))
                 
-                if tweet.id < mid:
-                    mid = tweet.id
+                if mid is None or int(tweet.id) < int(mid):
+                    mid = int(tweet.id)
             
             page += 1
             
@@ -217,8 +226,8 @@ class dltr(object):
                 if e[0][0]['code'] == 34:#Not found error
                     logging.warning("Status {0} could not be deleted, Twitter said 'Not Found'".format(tweet))
                 else:
-                    logging.critical("Twitter error {0}".format(e[0]['code']))
-                    logging.critical(e[0]['message'])
+                    logging.critical("Twitter error {0}".format(e[0][0]['code']))
+                    logging.critical(e[0][0]['message'])
                     raise twitter.TwitterError(e)
         
         logging.debug("All tweets deleted!")
